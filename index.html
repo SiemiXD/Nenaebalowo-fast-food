@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#191a15">
+  <title>ненаебалово — еда по-честному</title>
+  <style>
+    :root {
+      --bg: #f7f6f0;
+      --paper: #fffefa;
+      --ink: #191a15;
+      --muted: #77786f;
+      --line: #e6e4da;
+      --green: #c8f169;
+      --orange: #ff713b;
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .wrap { width: min(1200px, calc(100% - 36px)); margin-inline: auto; }
+
+    header {
+      position: sticky;
+      z-index: 5;
+      top: 0;
+      background: #f7f6f0ed;
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .logo {
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 22px;
+      font-weight: 950;
+      letter-spacing: -1px;
+      white-space: nowrap;
+    }
+    .logo span { color: var(--orange); }
+
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .nav-links a:hover { color: var(--ink); }
+
+    .button, .cart-button {
+      border: 0;
+      border-radius: 999px;
+      background: var(--ink);
+      color: white;
+      padding: 12px 17px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform .18s, background .18s;
+    }
+    .button:hover, .cart-button:hover { transform: translateY(-2px); }
+    .button:active, .cart-button:active { transform: scale(.98); }
+    .cart-button b {
+      display: inline-grid;
+      place-items: center;
+      min-width: 22px;
+      height: 22px;
+      margin-left: 5px;
+      padding: 0 5px;
+      border-radius: 99px;
+      background: var(--green);
+      color: var(--ink);
+      font-size: 12px;
+    }
+
+    .hero {
+      min-height: 410px;
+      display: grid;
+      grid-template-columns: 1fr .9fr;
+      align-items: center;
+      gap: 35px;
+      padding-block: 38px;
+    }
+    .eyebrow {
+      display: inline-block;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    h1 {
+      margin: 19px 0 14px;
+      font-size: clamp(48px, 7vw, 82px);
+      line-height: .94;
+      letter-spacing: -6px;
+    }
+    h1 span { color: var(--orange); }
+    .hero-copy {
+      max-width: 490px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+    .hero-photo {
+      height: 330px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      background: #e8e4da;
+      animation: fadeUp .6s ease both;
+    }
+    .hero-photo img, .product-image img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+    .hero-photo img { animation: gentleZoom 12s ease-in-out infinite alternate; }
+    .hero-label {
+      position: absolute;
+      right: 17px;
+      bottom: 17px;
+      padding: 12px 15px;
+      border-radius: 14px;
+      background: var(--green);
+      font-weight: 900;
+      transform: rotate(-3deg);
+    }
+
+    .catalog-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 18px;
+      margin: 20px 0;
+    }
+    h2 { margin: 0; font-size: 32px; letter-spacing: -1.3px; }
+    .subtext { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+    .search {
+      width: min(320px, 100%);
+      padding: 11px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      outline: none;
+      background: white;
+    }
+    .search:focus { border-color: #aaa99e; }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 0 14px;
+      scrollbar-width: thin;
+    }
+    .filter {
+      flex: 0 0 auto;
+      padding: 9px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .filter.active, .filter:hover {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: white;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      padding-bottom: 70px;
+    }
+    .product {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      animation: fadeUp .35s ease both;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .product:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 32px #191a150d;
+    }
+    .product-image { height: 180px; position: relative; overflow: hidden; background: #e9e6dd; }
+    .product-image img { transition: transform .35s; }
+    .product:hover .product-image img { transform: scale(1.05); }
+    .badge {
+      position: absolute;
+      top: 11px;
+      left: 11px;
+      padding: 6px 9px;
+      border-radius: 99px;
+      background: var(--green);
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .product-body { padding: 14px; }
+    .product-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 8px;
+    }
+    .product h3 { margin: 0; font-size: 16px; letter-spacing: -.3px; }
+    .price { white-space: nowrap; font-size: 16px; font-weight: 900; }
+    .description {
+      min-height: 38px;
+      margin: 8px 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .product-actions { display: flex; gap: 7px; }
+    .button.small { padding: 9px 12px; font-size: 12px; }
+    .button.light {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--ink);
+    }
+    .button.light:hover { background: #f0efe9; }
+    .no-results {
+      grid-column: 1 / -1;
+      padding: 35px;
+      border: 1px dashed #c9c8bf;
+      border-radius: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .delivery-banner {
+      position: relative;
+      overflow: hidden;
+      min-height: 210px;
+      margin: 0 0 65px;
+      padding: 30px;
+      border-radius: 26px;
+      background: var(--ink);
+      color: white;
+    }
+    .delivery-banner h2 { position: relative; z-index: 1; max-width: 500px; }
+    .delivery-banner p {
+      position: relative;
+      z-index: 1;
+      max-width: 500px;
+      color: #c4c5bc;
+      line-height: 1.6;
+    }
+    .road {
+      position: absolute;
+      right: 4%;
+      bottom: 22px;
+      width: 42%;
+      height: 55px;
+      border-bottom: 2px dashed #ffffff55;
+    }
+    .scooter {
+      position: absolute;
+      right: 0;
+      bottom: 21px;
+      font-size: 43px;
+      animation: roadTrip 5s ease-in-out infinite;
+    }
+    footer {
+      padding: 25px 0 35px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .overlay, .payment-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: none;
+      background: #10110dcc;
+    }
+    .overlay.open { display: flex; justify-content: flex-end; animation: fade .18s ease; }
+    .drawer {
+      width: min(440px, 100%);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 23px;
+      background: var(--paper);
+      animation: slideIn .25s ease;
+    }
+    .drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .drawer-head h2 { font-size: 26px; }
+    .close {
+      width: 39px;
+      height: 39px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      font-size: 20px;
+    }
+    .cart-items { flex: 1; overflow-y: auto; padding: 13px 0; }
+    .empty-cart { padding: 40px 8px; color: var(--muted); text-align: center; line-height: 1.7; }
+    .cart-row { padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .cart-row-top { display: flex; justify-content: space-between; gap: 10px; }
+    .cart-row strong { font-size: 14px; }
+    .cart-row small { display: block; margin-top: 5px; color: var(--muted); line-height: 1.45; }
+    .quantity { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .quantity button {
+      width: 29px; height: 29px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+    }
+    .cart-bottom { padding-top: 15px; border-top: 1px solid var(--line); }
+    .total-line { display: flex; justify-content: space-between; margin-bottom: 14px; font-weight: 900; font-size: 18px; }
+    .checkout { width: 100%; padding: 15px; }
+    .checkout:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 12;
+      display: none;
+      place-items: center;
+      padding: 16px;
+      background: #10110dcc;
+    }
+    .modal-overlay.open { display: grid; animation: fade .18s ease; }
+    .modal {
+      width: min(500px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 23px;
+      border-radius: 22px;
+      background: var(--paper);
+      animation: pop .22s ease;
+    }
+    .modal-intro { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .option-group { margin: 18px 0; }
+    .option-label { margin-bottom: 9px; font-size: 14px; font-weight: 850; }
+    .options { display: flex; flex-wrap: wrap; gap: 7px; }
+    .option {
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .option.selected { border-color: var(--ink); background: var(--ink); color: white; }
+    .modal-bottom { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 22px; }
+    .modal-price { font-weight: 950; font-size: 20px; }
+
+    .payment-overlay {
+      z-index: 15;
+      place-items: center;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .payment-overlay.open { display: grid; animation: fade .25s ease; }
+    .tracking-card {
+      width: min(540px, 100%);
+      position: relative;
+      overflow: hidden;
+      padding: 28px;
+      border-radius: 27px;
+      background: var(--paper);
+      animation: pop .35s ease;
+    }
+    .tracking-card h2 { font-size: 29px; }
+    .tracking-intro { color: var(--muted); line-height: 1.5; }
+    .track-scene {
+      height: 175px;
+      position: relative;
+      overflow: hidden;
+      margin: 22px 0;
+      border-radius: 18px;
+      background: linear-gradient(#d8edff 0 63%, #c5dc93 63%);
+    }
+    .sunny {
+      position: absolute;
+      top: 18px;
+      right: 35px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #ffd568;
+      box-shadow: 0 0 30px #ffd5688a;
+      animation: sunPulse 2s ease-in-out infinite alternate;
+    }
+    .cloud {
+      position: absolute;
+      top: 28px;
+      left: 10%;
+      font-size: 28px;
+      animation: cloudMove 11s linear infinite;
+    }
+    .track-road {
+      position: absolute;
+      right: 0;
+      bottom: 25px;
+      left: 0;
+      height: 31px;
+      background: #55574d;
+    }
+    .track-road::after {
+      content: "";
+      position: absolute;
+      top: 14px;
+      left: 0;
+      width: 100%;
+      border-top: 2px dashed #fff;
+    }
+    .track-scooter {
+      position: absolute;
+      z-index: 1;
+      bottom: 45px;
+      left: 5%;
+      font-size: 46px;
+      animation: deliveryRide 7s ease-in-out infinite;
+    }
+    .track-home {
+      position: absolute;
+      right: 6%;
+      bottom: 53px;
+      font-size: 47px;
+    }
+    .steps { display: grid; gap: 12px; margin: 17px 0 20px; }
+    .step { display: flex; align-items: center; gap: 11px; color: #aaa99f; font-size: 14px; transition: color .3s; }
+    .step-dot {
+      width: 25px;
+      height: 25px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #d4d2c8;
+      border-radius: 50%;
+      background: white;
+      font-size: 12px;
+    }
+    .step.active { color: var(--ink); font-weight: 800; }
+    .step.done { color: #4a7623; }
+    .step.active .step-dot { border-color: var(--green); background: var(--green); color: var(--ink); }
+    .step.done .step-dot { border-color: #c5e98a; background: #c5e98a; }
+    .tracking-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .tracking-footer small { color: var(--muted); }
+    .tracking-close { padding-inline: 20px; }
+
+    .toast {
+      position: fixed;
+      z-index: 25;
+      left: 50%;
+      bottom: 20px;
+      padding: 12px 17px;
+      border-radius: 14px;
+      background: var(--ink);
+      color: white;
+      opacity: 0;
+      transform: translate(-50%, 12px);
+      pointer-events: none;
+      transition: .25s;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pop { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+    @keyframes slideIn { from { opacity: .7; transform: translateX(22px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes gentleZoom { to { transform: scale(1.07); } }
+    @keyframes sunPulse { to { transform: scale(1.12); } }
+    @keyframes cloudMove { from { transform: translateX(-30px); } to { transform: translateX(430px); } }
+    @keyframes deliveryRide {
+      0%, 10% { left: 5%; transform: translateY(0); }
+      45% { left: 70%; transform: translateY(-5px); }
+      55% { left: 70%; transform: translateY(0); }
+      90%, 100% { left: 5%; transform: translateY(0); }
+    }
+    @keyframes roadTrip {
+      0%, 10% { transform: translateX(0); }
+      45%, 55% { transform: translateX(-150px) translateY(-4px); }
+      90%, 100% { transform: translateX(0); }
+    }
+
+    @media (max-width: 980px) {
+      .menu-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 700px) {
+      .hero { grid-template-columns: 1fr; gap: 22px; padding-block: 30px; }
+      .hero-photo { height: 270px; }
+      .menu-grid { grid-template-columns: repeat(2, 1fr); }
+      .catalog-top { align-items: stretch; flex-direction: column; }
+      .search { width: 100%; }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 460px) {
+      .wrap { width: calc(100% - 26px); }
+      h1 { letter-spacing: -4px; }
+      .menu-grid { grid-template-columns: 1fr; }
+      .product-image { height: 210px; }
+      .delivery-banner { padding: 23px 20px 90px; }
+      .road { width: 62%; }
+      .tracking-card { padding: 20px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <a class="logo" href="#">нена<span>еб</span>алово</a>
+      <nav class="nav-links" aria-label="Навигация">
+        <a href="#menu">Меню</a>
+        <a href="#delivery">Доставка</a>
+      </nav>
+      <button class="cart-button" id="openCart" type="button">
+        Корзина <b id="cartCount">0</b>
+      </button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">🔥 Большое меню. Честные цены.</span>
+        <h1>Еда.<br><span>Без драмы.</span></h1>
+        <p class="hero-copy">
+          Шаурма, бургеры, пицца, закуски и кое-что сладкое.
+          Собирай заказ как хочется — стоимость всегда видна заранее.
+        </p>
+        <a class="button" href="#menu" style="display:inline-block;text-decoration:none;margin-top:12px">Смотреть меню ↓</a>
+      </div>
+      <div class="hero-photo">
+        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1100&q=85"
+             alt="Аппетитный бургер" fetchpriority="high">
+        <div class="hero-label">Сделано с аппетитом 🍔</div>
+      </div>
+    </section>
+
+    <section id="menu">
+      <div class="catalog-top">
+        <div>
+          <h2>Большое меню</h2>
+          <p class="subtext">Тридцать поводов не готовить самому.</p>
+        </div>
+        <input class="search" id="search" type="search" placeholder="Найти блюдо…" aria-label="Поиск по меню">
+      </div>
+      <div class="filters" id="filters" aria-label="Категории меню"></div>
+      <div class="menu-grid" id="menuGrid"></div>
+    </section>
+
+    <section class="delivery-banner" id="delivery">
+      <span class="eyebrow" style="border-color:#ffffff40;color:#eee">🛵 Доставка с настроением</span>
+      <h2 style="margin-top:14px">Еда уже едет к тебе.</h2>
+      <p>После нажатия «Оплатить» покажем, как заказ проходит путь от кухни до двери.</p>
+      <div class="road" aria-hidden="true"><span class="scooter">🛵</span></div>
+    </section>
+  </main>
+
+  <footer><div class="wrap">© ненаебалово · Вкусно, понятно, без лишней драмы.</div></footer>
+
+  <div class="overlay" id="cartOverlay" aria-hidden="true">
+    <aside class="drawer" role="dialog" aria-modal="true" aria-label="Корзина">
+      <div class="drawer-head">
+        <h2>Твоя корзина</h2>
+        <button class="close" type="button" data-close="cart" aria-label="Закрыть">×</button>
+      </div>
+      <div class="cart-items" id="cartItems"></div>
+      <div class="cart-bottom">
+        <div class="total-line"><span>Итого</span><span id="cartTotal">0 ₽</span></div>
+        <button class="button checkout" id="payButton" type="button" disabled>Оплатить</button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="modal-overlay" id="customOverlay" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="customTitle">
+      <div class="drawer-head">
+        <h2 id="customTitle">Настроить блюдо</h2>
+        <button class="close" type="button" data-close="custom" aria-label="Закрыть">×</button>
+      </div>
+      <p class="modal-intro">Добавь ингредиенты. Цена пересчитается сразу.</p>
+      <div id="customOptions"></div>
+      <div class="modal-bottom">
+        <span class="modal-price" id="customPrice">0 ₽</span>
+        <button class="button" id="addCustom" type="button">Добавить</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="payment-overlay" id="paymentOverlay" aria-hidden="true">
+    <section class="tracking-card" role="dialog" aria-modal="true" aria-labelledby="trackingTitle">
+      <div class="drawer-head">
+        <div>
+          <span class="eyebrow">Заказ №<span id="orderNumber"></span></span>
+          <h2 id="trackingTitle" style="margin-top:13px">Готовим вкусное!</h2>
+        </div>
+        <button class="close" type="button" data-close="payment" aria-label="Закрыть">×</button>
+      </div>
+      <p class="tracking-intro" id="trackingMessage">Заказ принят. Кухня уже получила сигнал.</p>
+
+      <div class="track-scene" aria-label="Анимация доставки: курьер едет к дому">
+        <span class="sunny"></span>
+        <span class="cloud">☁️</span>
+        <span class="track-home">🏠</span>
+        <div class="track-road"></div>
+        <span class="track-scooter">🛵</span>
+      </div>
+
+      <div class="steps" id="steps">
+        <div class="step active"><span class="step-dot">1</span> Заказ принят</div>
+        <div class="step"><span class="step-dot">2</span> Готовим на кухне</div>
+        <div class="step"><span class="step-dot">3</span> Курьер уже едет</div>
+        <div class="step"><span class="step-dot">4</span> Приятного аппетита!</div>
+      </div>
+
+      <div class="tracking-footer">
+        <small id="trackingTime">Ориентировочно: 25–40 минут</small>
+        <button class="button tracking-close" type="button" data-close="payment">Отлично!</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const photo = (id) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=78`;
+
+    const products = [
+      { id:"sh1", name:"Шаурма классическая", category:"Шаурма", price:390, badge:"Хит", image:photo("photo-1662116765994-1e4200c43589"), description:"Курица, овощи, чесночный соус и тёплый лаваш." },
+      { id:"sh2", name:"Шаурма огненная", category:"Шаурма", price:450, badge:"Остро!", image:photo("photo-1626700051175-6818013e1d4f"), description:"Острая курица, перец халапеньо и пикантный соус." },
+      { id:"sh3", name:"Шаурма сырная", category:"Шаурма", price:470, badge:"С сыром", image:photo("photo-1626082927389-6cd097cdc6ec"), description:"Курица, расплавленный сыр, салат и сливочный соус." },
+      { id:"sh4", name:"Шаурма с говядиной", category:"Шаурма", price:520, badge:"Плотная", image:photo("photo-1529006557810-274b9b2fc783"), description:"Говядина, свежие овощи, зелень и соус." },
+      { id:"sh5", name:"Шаурма фалафельная", category:"Шаурма", price:410, badge:"Без мяса", image:photo("photo-1547058881-aa0edd92aab3"), description:"Фалафель, овощи, зелень и тахинный соус." },
+      { id:"sh6", name:"Шаурма двойная", category:"Шаурма", price:590, badge:"XL", image:photo("photo-1561651823-34feb02250e4"), description:"Двойная порция курицы — когда нужен серьёзный перекус." },
+
+      { id:"b1", name:"Бургер классический", category:"Бургеры", price:490, badge:"Бестселлер", image:photo("photo-1568901346375-23c9450c58cd"), description:"Говяжья котлета, сыр, салат, томат и фирменный соус." },
+      { id:"b2", name:"Чизбургер двойной", category:"Бургеры", price:620, badge:"Двойной", image:photo("photo-1550547660-d9450f859349"), description:"Две котлеты, два ломтика сыра и никаких компромиссов." },
+      { id:"b3", name:"Бургер острый", category:"Бургеры", price:530, badge:"Остро!", image:photo("photo-1571091718767-18b5b1457add"), description:"Сочная котлета, острый соус и маринованный перец." },
+      { id:"b4", name:"Куриный бургер", category:"Бургеры", price:460, badge:"Курица", image:photo("photo-1606755962773-d324e0a13086"), description:"Хрустящая курица, салат и нежный соус в булочке." },
+      { id:"b5", name:"Бургер с грибами", category:"Бургеры", price:550, badge:"Новинка", image:photo("photo-1553979459-d2229ba7433a"), description:"Говядина, обжаренные грибы, сыр и сливочный соус." },
+      { id:"b6", name:"Вегги-бургер", category:"Бургеры", price:440, badge:"Вегги", image:photo("photo-1520072959219-c595dc870360"), description:"Овощная котлета, листья салата и соус с зеленью." },
+
+      { id:"p1", name:"Пицца Маргарита", category:"Пицца", price:590, badge:"Классика", image:photo("photo-1574071318508-1cdbab80d002"), description:"Томатный соус, моцарелла и базилик. Просто прекрасно." },
+      { id:"p2", name:"Пицца Пепперони", category:"Пицца", price:690, badge:"Остро-сочно", image:photo("photo-1628840042765-356cda07504e"), description:"Пепперони, сыр и томатный соус на тонком тесте." },
+      { id:"p3", name:"Пицца четыре сыра", category:"Пицца", price:750, badge:"Сырная", image:photo("photo-1571407970349-bc81e7e96d47"), description:"Моцарелла, чеддер, горгонзола и пармезан." },
+      { id:"p4", name:"Пицца BBQ", category:"Пицца", price:720, badge:"Фирменная", image:photo("photo-1513104890138-7c749659a591"), description:"Курица, красный лук, сыр и соус барбекю." },
+      { id:"p5", name:"Пицца овощная", category:"Пицца", price:640, badge:"Вегги", image:photo("photo-1579751626657-72bc17010498"), description:"Перец, грибы, оливки, томаты и много сыра." },
+      { id:"p6", name:"Пицца мясная", category:"Пицца", price:790, badge:"Сытная", image:photo("photo-1593560708920-61dd98c46a4e"), description:"Ветчина, курица, салями и щедрый слой сыра." },
+
+      { id:"s1", name:"Картофель фри", category:"Закуски", price:210, badge:"Хрустит", image:photo("photo-1573080496219-bb080dd4f877"), description:"Золотистый картофель с солью. Соус можно добавить." },
+      { id:"s2", name:"Картофель по-деревенски", category:"Закуски", price:250, badge:"С корочкой", image:photo("photo-1518013431117-eb1465fa5752"), description:"Румяные дольки картофеля с ароматными специями." },
+      { id:"s3", name:"Куриные наггетсы", category:"Закуски", price:320, badge:"6 штук", image:photo("photo-1562967914-608f82629710"), description:"Хрустящие снаружи, нежные внутри." },
+      { id:"s4", name:"Луковые кольца", category:"Закуски", price:260, badge:"8 штук", image:photo("photo-1639024471283-03518883512d"), description:"Золотистые кольца в хрустящей панировке." },
+      { id:"s5", name:"Сырные палочки", category:"Закуски", price:330, badge:"Тянутся!", image:photo("photo-1531749668029-2db88e4276c7"), description:"Горячий сыр в хрустящей корочке." },
+      { id:"s6", name:"Крылышки BBQ", category:"Закуски", price:420, badge:"6 штук", image:photo("photo-1527477396000-e27163b481c2"), description:"Куриные крылышки в сладковатом соусе барбекю." },
+
+      { id:"d1", name:"Чизкейк", category:"Десерты", price:290, badge:"Сладкое", image:photo("photo-1533134242443-d4fd215305ad"), description:"Нежный сливочный десерт с ягодным акцентом." },
+      { id:"d2", name:"Шоколадный брауни", category:"Десерты", price:260, badge:"Шоколад", image:photo("photo-1606313564200-e75d5e30476c"), description:"Плотный шоколадный брауни для сладкой паузы." },
+      { id:"d3", name:"Пончики", category:"Десерты", price:230, badge:"2 штуки", image:photo("photo-1551024506-0bccd828d307"), description:"Мягкие пончики с глазурью и хорошим настроением." },
+
+      { id:"dr1", name:"Лимонад домашний", category:"Напитки", price:190, badge:"Освежает", image:photo("photo-1513558161293-cdaf765edfd7"), description:"Цитрусы, лёд и свежий вкус." },
+      { id:"dr2", name:"Молочный коктейль", category:"Напитки", price:290, badge:"Классика", image:photo("photo-1572490122747-3968b75cc699"), description:"Холодный молочный коктейль. Выбери вкус при заказе." },
+      { id:"dr3", name:"Кофе латте", category:"Напитки", price:220, badge:"Бодрит", image:photo("photo-1461023058943-07fcbe16d735"), description:"Эспрессо и нежная молочная пена." }
+    ];
+
+    const addOns = [
+      { id:"cheese", name:"Дополнительный сыр", price:50 },
+      { id:"jalapeno", name:"Халапеньо", price:35 },
+      { id:"mushrooms", name:"Грибы", price:45 },
+      { id:"bacon", name:"Бекон", price:70 },
+      { id:"fries", name:"Картофель фри", price:40 },
+      { id:"sauce", name:"Дополнительный соус", price:30 },
+      { id:"tomato", name:"Свежий томат", price:25 },
+      { id:"onion", name:"Красный лук", price:20 }
+    ];
+
+    const categories = ["Всё меню", "Шаурма", "Бургеры", "Пицца", "Закуски", "Десерты", "Напитки"];
+    const state = { cart: [], category: "Всё меню", query: "", extras: [], customProduct: null };
+    const $ = (selector) => document.querySelector(selector);
+    const money = (value) => `${value.toLocaleString("ru-RU")} ₽`;
+
+    function renderFilters() {
+      $("#filters").innerHTML = categories.map((category) =>
+        `<button class="filter ${category === state.category ? "active" : ""}" type="button" data-category="${category}">${category}</button>`
+      ).join("");
+    }
+
+    function renderMenu() {
+      const query = state.query.toLocaleLowerCase("ru");
+      const filtered = products.filter((product) => {
+        const categoryMatch = state.category === "Всё меню" || product.category === state.category;
+        const textMatch = `${product.name} ${product.description} ${product.category}`.toLocaleLowerCase("ru").includes(query);
+        return categoryMatch && textMatch;
+      });
+
+      if (!filtered.length) {
+        $("#menuGrid").innerHTML = '<div class="no-results">Ничего не нашлось. Попробуй изменить запрос 🔎</div>';
+        return;
+      }
+
+      $("#menuGrid").innerHTML = filtered.map((product) => `
+        <article class="product">
+          <div class="product-image">
+            <img src="${product.image}" alt="${product.name}" loading="lazy">
+            <span class="badge">${product.badge}</span>
+          </div>
+          <div class="product-body">
+            <div class="product-title">
+              <h3>${product.name}</h3>
+              <span class="price">${money(product.price)}</span>
+            </div>
+            <p class="description">${product.description}</p>
+            <div class="product-actions">
+              <button class="button small" type="button" data-add="${product.id}">В корзину</button>
+              <button class="button small light" type="button" data-custom="${product.id}">Добавки</button>
+            </div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function toast(message) {
+      const element = $("#toast");
+      element.textContent = message;
+      element.classList.add("show");
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => element.classList.remove("show"), 2100);
+    }
+
+    function addToCart(item) {
+      const existing = state.cart.find((entry) => entry.key === item.key);
+      if (existing) existing.quantity += 1;
+      else state.cart.push({ ...item, quantity: 1 });
+      renderCart();
+      toast("Добавлено в корзину ✨");
+    }
+
+    function renderCart() {
+      const count = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+      const total = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      $("#cartCount").textContent = count;
+      $("#cartTotal").textContent = money(total);
+      $("#payButton").disabled = count === 0;
+
+      if (!state.cart.length) {
+        $("#cartItems").innerHTML = '<div class="empty-cart">Корзина пока пустая.<br>Добавь что-нибудь вкусное 🌯</div>';
+        return;
+      }
+
+      $("#cartItems").innerHTML = state.cart.map((item) => `
+        <div class="cart-row">
+          <div class="cart-row-top">
+            <div><strong>${item.name}</strong><small>${item.details || "Фирменный состав"}</small></div>
+            <strong>${money(item.price * item.quantity)}</strong>
+          </div>
+          <div class="quantity">
+            <button type="button" data-change="-1" data-key="${item.key}" aria-label="Уменьшить">−</button>
+            <span>${item.quantity}</span>
+            <button type="button" data-change="1" data-key="${item.key}" aria-label="Увеличить">+</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function openLayer(element) {
+      element.classList.add("open");
+      element.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeLayer(element) {
+      element.classList.remove("open");
+      element.setAttribute("aria-hidden", "true");
+      if (!document.querySelector(".overlay.open") &&
+          !document.querySelector(".modal-overlay.open") &&
+          !document.querySelector(".payment-overlay.open")) {
+        document.body.style.overflow = "";
+      }
+    }
+
+    function openCustomizer(product) {
+      state.customProduct = product;
+      state.extras = [];
+      $("#customOptions").innerHTML = `
+        <div class="option-group">
+          <div class="option-label">Добавь ингредиенты — можно выбрать несколько</div>
+          <div class="options">
+            ${addOns.map((item) => `<button class="option" type="button" data-extra="${item.id}">${item.name} +${money(item.price)}</button>`).join("")}
+          </div>
+        </div>
+      `;
+      updateCustomPrice();
+      openLayer($("#customOverlay"));
+    }
+
+    function updateCustomPrice() {
+      const extraTotal = state.extras.reduce((sum, id) => sum + addOns.find((item) => item.id === id).price, 0);
+      $("#customPrice").textContent = money(state.customProduct.price + extraTotal);
+    }
+
+    function startDelivery() {
+      const total = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      if (!state.cart.length) return;
+
+      closeLayer($("#cartOverlay"));
+      $("#orderNumber").textContent = String(Math.floor(1000 + Math.random() * 9000));
+      $("#trackingMessage").textContent = `Заказ на ${money(total)} принят. Кухня уже получила сигнал.`;
+      $("#trackingTitle").textContent = "Готовим вкусное!";
+      $("#trackingTime").textContent = "Демо-режим: оплата не списывается";
+      $("#steps").querySelectorAll(".step").forEach((step, index) => {
+        step.classList.toggle("active", index === 0);
+        step.classList.remove("done");
+      });
+
+      state.cart = [];
+      renderCart();
+      openLayer($("#paymentOverlay"));
+
+      const steps = [...$("#steps").querySelectorAll(".step")];
+      const titles = ["Готовим вкусное!", "Заказ на кухне", "Курьер уже едет!", "Ура, заказ у двери!"];
+      const messages = [
+        "Заказ принят. Кухня уже получила сигнал.",
+        "Повара собирают заказ из свежих ингредиентов.",
+        "Курьер забрал пакет и отправился к тебе.",
+        "Доставка завершена. Приятного аппетита!"
+      ];
+
+      clearInterval(startDelivery.timer);
+      let current = 0;
+      startDelivery.timer = setInterval(() => {
+        if (!$("#paymentOverlay").classList.contains("open")) {
+          clearInterval(startDelivery.timer);
+          return;
+        }
+
+        if (current < steps.length - 1) {
+          steps[current].classList.remove("active");
+          steps[current].classList.add("done");
+          current += 1;
+          steps[current].classList.add("active");
+          $("#trackingTitle").textContent = titles[current];
+          $("#trackingMessage").textContent = messages[current];
+
+          if (current === steps.length - 1) {
+            steps[current].classList.add("done");
+            $("#trackingTime").textContent = "Демо-анимация завершена 💚";
+            clearInterval(startDelivery.timer);
+          }
+        }
+      }, 2600);
+    }
+
+    $("#filters").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-category]");
+      if (!button) return;
+      state.category = button.dataset.category;
+      renderFilters();
+      renderMenu();
+    });
+
+    $("#search").addEventListener("input", (event) => {
+      state.query = event.target.value.trim();
+      renderMenu();
+    });
+
+    $("#menuGrid").addEventListener("click", (event) => {
+      const addButton = event.target.closest("[data-add]");
+      const customButton = event.target.closest("[data-custom]");
+
+      if (addButton) {
+        const product = products.find((item) => item.id === addButton.dataset.add);
+        addToCart({ key: product.id, name: product.name, price: product.price, details: "Фирменный состав" });
+      }
+
+      if (customButton) {
+        const product = products.find((item) => item.id === customButton.dataset.custom);
+        openCustomizer(product);
+      }
+    });
+
+    $("#customOptions").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-extra]");
+      if (!button) return;
+
+      const id = button.dataset.extra;
+      if (state.extras.includes(id)) {
+        state.extras = state.extras.filter((item) => item !== id);
+        button.classList.remove("selected");
+      } else {
+        state.extras.push(id);
+        button.classList.add("selected");
+      }
+      updateCustomPrice();
+    });
+
+    $("#addCustom").addEventListener("click", () => {
+      const product = state.customProduct;
+      const selected = state.extras.map((id) => addOns.find((item) => item.id === id));
+      const price = product.price + selected.reduce((sum, item) => sum + item.price, 0);
+      const details = selected.length ? selected.map((item) => item.name).join(", ") : "Без дополнительных ингредиентов";
+      const key = `${product.id}-${state.extras.slice().sort().join(",")}`;
+
+      addToCart({ key, name: product.name, price, details });
+      closeLayer($("#customOverlay"));
+    });
+
+    $("#openCart").addEventListener("click", () => openLayer($("#cartOverlay")));
+
+    $("#cartItems").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-change]");
+      if (!button) return;
+      const item = state.cart.find((entry) => entry.key === button.dataset.key);
+      if (!item) return;
+
+      item.quantity += Number(button.dataset.change);
+      if (item.quantity < 1) state.cart = state.cart.filter((entry) => entry.key !== item.key);
+      renderCart();
+    });
+
+    $("#payButton").addEventListener("click", startDelivery);
+
+    document.addEventListener("click", (event) => {
+      const closeButton = event.target.closest("[data-close]");
+      if (closeButton) {
+        const layers = {
+          cart: $("#cartOverlay"),
+          custom: $("#customOverlay"),
+          payment: $("#paymentOverlay")
+        };
+        closeLayer(layers[closeButton.dataset.close]);
+      }
+
+      if (event.target === $("#cartOverlay")) closeLayer($("#cartOverlay"));
+      if (event.target === $("#customOverlay")) closeLayer($("#customOverlay"));
+      if (event.target === $("#paymentOverlay")) closeLayer($("#paymentOverlay"));
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeLayer($("#cartOverlay"));
+        closeLayer($("#customOverlay"));
+        closeLayer($("#paymentOverlay"));
+      }
+    });
+
+    renderFilters();
+    renderMenu();
+    renderCart();
+  </script>
+</body>
+</html>
